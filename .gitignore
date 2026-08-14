@@ -19,3 +19,7 @@ env/
 # IDEs
 .vscode/
 .idea/
+
+# Word Documents
+*.docx
+~$*.docx
