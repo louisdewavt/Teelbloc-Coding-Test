@@ -76,6 +76,8 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
         yield "data: " + json.dumps({"iteration": 0, "status": "error", "message": f"Initialization Error: {str(e)}"}) + "\n\n"
         return
     
+    model_id = os.environ.get("LLM_MODEL", "Qwen/Qwen2.5-Coder-32B-Instruct")
+    
     for i in range(1, max_iterations + 1):
         yield "data: " + json.dumps({"iteration": i, "status": "thinking", "message": f"Asking LLM (Iteration {i}/{max_iterations})..."}) + "\n\n"
         
@@ -85,7 +87,7 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
         for attempt in range(max_retries):
             try:
                 response = client.chat.completions.create(
-                    model="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+                    model=model_id,
                     messages=messages,
                     temperature=0.7,
                     max_tokens=2048,
