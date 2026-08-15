@@ -56,9 +56,12 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
     """
     Async generator that yields SSE JSON strings containing progress.
     """
+    base_url = os.environ.get("LLM_BASE_URL", "https://router.huggingface.co/hf-inference/v1/")
+    api_key = os.environ.get("LLM_API_KEY", os.environ.get("HF_TOKEN"))
+    
     client = OpenAI(
-        base_url="https://router.huggingface.co/hf-inference/v1/",
-        api_key=os.environ.get("HF_TOKEN")
+        base_url=base_url,
+        api_key=api_key
     )
     
     with open(puzzle_file_path, "r") as f:
@@ -70,7 +73,7 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
     ]
     
     for i in range(1, max_iterations + 1):
-        yield "data: " + json.dumps({"iteration": i, "status": "thinking", "message": f"Asking HuggingFace (Iteration {i}/{max_iterations})..."}) + "\n\n"
+        yield "data: " + json.dumps({"iteration": i, "status": "thinking", "message": f"Asking LLM (Iteration {i}/{max_iterations})..."}) + "\n\n"
         
         max_retries = 4
         retry_delay = 2
@@ -78,12 +81,25 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
         for attempt in range(max_retries):
             try:
                 response = client.chat.completions.create(
-                    model="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+                    model="openai/gpt-oss-120b",
                     messages=messages,
                     temperature=0.7,
                     max_tokens=2048,
+                    stream=True,
                 )
-                reply = response.choices[0].message.content
+                
+                reply = ""
+                last_yield = time.time()
+                for chunk in response:
+                    if chunk.choices and len(chunk.choices) > 0:
+                        delta = chunk.choices[0].delta.content
+                        if delta:
+                            reply += delta
+                            # Heartbeat to prevent Vercel 10s timeout
+                            if time.time() - last_yield > 2.0:
+                                yield "data: " + json.dumps({"iteration": i, "status": "thinking", "message": f"Generating... ({len(reply)} chars)"}) + "\n\n"
+                                last_yield = time.time()
+                                
                 # Add the assistant's reply to the conversation history
                 messages.append({"role": "assistant", "content": reply})
                 break
