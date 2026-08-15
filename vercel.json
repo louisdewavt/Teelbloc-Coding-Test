@@ -8,17 +8,14 @@
       }
     },
     {
-      "src": "backend/main.py",
-      "use": "@vercel/python",
-      "config": {
-        "includeFiles": "pushworld/**"
-      }
+      "src": "main.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/main.py"
+      "dest": "/main.py"
     },
     {
       "src": "/(.*)",

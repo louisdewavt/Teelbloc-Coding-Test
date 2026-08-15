@@ -40,7 +40,7 @@ class VercelPathMiddleware:
                     original_path = headers[h_name].decode("utf-8")
                     break
                     
-            if original_path and scope["path"] == "/backend/main.py":
+            if original_path and scope["path"] in ("/backend/main.py", "/main.py"):
                 scope["path"] = original_path
 
         await self.app(scope, receive, send)
@@ -97,7 +97,7 @@ def get_puzzle_content(level: str, name: str):
     return {"content": content}
 
 # Vercel legacy routing compatibility
-@app.api_route("/backend/main.py", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/main.py", methods=["GET", "POST", "PUT", "DELETE"])
 async def vercel_catch_all(request: Request):
     # Retrieve original path from headers if Vercel rewrote it
     original_path = request.headers.get("x-vercel-forwarded-path", request.headers.get("x-now-route-matches", ""))
