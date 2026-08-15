@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { convertFileToPushworld, move, isGoalState, drawCanvas } from './pushworld';
 
-const BACKEND_URL = 'http://127.0.0.1:8000';
+const BACKEND_URL = import.meta.env.PROD ? '' : 'http://127.0.0.1:8000';
 
 function App() {
   const [puzzleList, setPuzzleList] = useState({ level1: [], level2: [], level3: [], level4: [] });

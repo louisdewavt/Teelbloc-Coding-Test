@@ -12,6 +12,11 @@
       "use": "@vercel/python"
     }
   ],
+  "functions": {
+    "backend/main.py": {
+      "includeFiles": "pushworld/**"
+    }
+  },
   "routes": [
     {
       "src": "/api/(.*)",
