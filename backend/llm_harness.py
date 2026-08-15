@@ -57,7 +57,7 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
     Async generator that yields SSE JSON strings containing progress.
     """
     client = OpenAI(
-        base_url="https://api-inference.huggingface.co/v1/",
+        base_url="https://router.huggingface.co/hf-inference/v1/",
         api_key=os.environ.get("HF_TOKEN")
     )
     
