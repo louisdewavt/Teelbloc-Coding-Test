@@ -85,7 +85,7 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
         for attempt in range(max_retries):
             try:
                 response = client.chat.completions.create(
-                    model="openai/gpt-oss-120b",
+                    model="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
                     messages=messages,
                     temperature=0.7,
                     max_tokens=2048,
