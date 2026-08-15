@@ -14,13 +14,38 @@ load_dotenv()
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "pushworld", "python3", "src"))
 
-from llm_harness import solve_with_llm
-# pyrefly: ignore [missing-import]
-from pushworld.puzzle import PushWorldPuzzle
-from solvers import solve_bfs, solve_dfs, solve_rgd, solve_rgd_heuristic
+try:
+    from llm_harness import solve_with_llm
+    # pyrefly: ignore [missing-import]
+    from pushworld.puzzle import PushWorldPuzzle
+    from solvers import solve_bfs, solve_dfs, solve_rgd, solve_rgd_heuristic
+    IMPORT_ERROR = None
+except Exception as e:
+    IMPORT_ERROR = str(e)
+    import traceback
+    IMPORT_TRACE = traceback.format_exc()
+
+from starlette.types import ASGIApp, Receive, Scope, Send
+
+class VercelPathMiddleware:
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] in ("http", "websocket"):
+            headers = dict(scope.get("headers", []))
+            original_path = None
+            for h_name in [b"x-vercel-forwarded-path", b"x-now-route-matches"]:
+                if h_name in headers:
+                    original_path = headers[h_name].decode("utf-8")
+                    break
+                    
+            if original_path and scope["path"] == "/backend/main.py":
+                scope["path"] = original_path
+
+        await self.app(scope, receive, send)
 
 app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,6 +53,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(VercelPathMiddleware)
 
 PUZZLES_DIR = os.path.join(os.path.dirname(__file__), "..", "pushworld", "benchmark", "puzzles")
 
@@ -35,6 +61,18 @@ class SolveRequest(BaseModel):
     level: str
     name: str
     algorithm: str # bfs, dfs, rgd
+
+@app.get("/api/debug")
+def get_debug():
+    return {
+        "cwd": os.getcwd(),
+        "__file__": __file__,
+        "puzzles_dir": PUZZLES_DIR,
+        "puzzles_dir_exists": os.path.exists(PUZZLES_DIR),
+        "import_error": IMPORT_ERROR,
+        "import_trace": IMPORT_TRACE if IMPORT_ERROR else None,
+        "files_in_root": os.listdir(os.path.join(os.path.dirname(__file__), "..")) if os.path.exists(os.path.join(os.path.dirname(__file__), "..")) else []
+    }
 
 @app.get("/api/puzzles")
 def get_puzzles():
@@ -57,6 +95,19 @@ def get_puzzle_content(level: str, name: str):
     with open(file_path, "r") as f:
         content = f.read()
     return {"content": content}
+
+# Vercel legacy routing compatibility
+@app.api_route("/backend/main.py", methods=["GET", "POST", "PUT", "DELETE"])
+async def vercel_catch_all(request: Request):
+    # Retrieve original path from headers if Vercel rewrote it
+    original_path = request.headers.get("x-vercel-forwarded-path", request.headers.get("x-now-route-matches", ""))
+    
+    # Also we could just return debug info
+    return {
+        "message": "Vercel route caught",
+        "path": request.scope.get("path"),
+        "headers": dict(request.headers)
+    }
 
 @app.post("/api/solve")
 def solve_puzzle(req: SolveRequest):
