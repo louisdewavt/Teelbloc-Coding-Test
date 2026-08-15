@@ -56,21 +56,25 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
     """
     Async generator that yields SSE JSON strings containing progress.
     """
-    base_url = os.environ.get("LLM_BASE_URL", "https://router.huggingface.co/hf-inference/v1/")
-    api_key = os.environ.get("LLM_API_KEY", os.environ.get("HF_TOKEN"))
-    
-    client = OpenAI(
-        base_url=base_url,
-        api_key=api_key
-    )
-    
-    with open(puzzle_file_path, "r") as f:
-        puzzle_text = f.read()
+    try:
+        base_url = os.environ.get("LLM_BASE_URL", "https://router.huggingface.co/hf-inference/v1/")
+        api_key = os.environ.get("LLM_API_KEY", os.environ.get("HF_TOKEN"))
+        
+        client = OpenAI(
+            base_url=base_url,
+            api_key=api_key
+        )
+        
+        with open(puzzle_file_path, "r") as f:
+            puzzle_text = f.read()
 
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": f"Please write a python script to solve this puzzle:\n\n{puzzle_text}\n\nRemember to define `def solve(puzzle_text: str) -> str:`."}
-    ]
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Please write a python script to solve this puzzle:\n\n{puzzle_text}\n\nRemember to define `def solve(puzzle_text: str) -> str:`."}
+        ]
+    except Exception as e:
+        yield "data: " + json.dumps({"iteration": 0, "status": "error", "message": f"Initialization Error: {str(e)}"}) + "\n\n"
+        return
     
     for i in range(1, max_iterations + 1):
         yield "data: " + json.dumps({"iteration": i, "status": "thinking", "message": f"Asking LLM (Iteration {i}/{max_iterations})..."}) + "\n\n"
