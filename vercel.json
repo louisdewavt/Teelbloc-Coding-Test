@@ -17,14 +17,14 @@
       "includeFiles": "pushworld/**"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/backend/main.py"
+      "src": "/api/(.*)",
+      "dest": "/backend/main.py"
     },
     {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
     }
   ]
 }
