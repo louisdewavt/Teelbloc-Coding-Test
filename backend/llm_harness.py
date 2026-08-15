@@ -4,7 +4,7 @@ import subprocess
 import json
 import tempfile
 import traceback
-from groq import Groq
+from openai import OpenAI
 import sys
 
 # Add pushworld path for validation
@@ -56,7 +56,10 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
     """
     Async generator that yields SSE JSON strings containing progress.
     """
-    client = Groq()
+    client = OpenAI(
+        base_url="https://api-inference.huggingface.co/v1/",
+        api_key=os.environ.get("HF_TOKEN")
+    )
     
     with open(puzzle_file_path, "r") as f:
         puzzle_text = f.read()
@@ -67,7 +70,7 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
     ]
     
     for i in range(1, max_iterations + 1):
-        yield "data: " + json.dumps({"iteration": i, "status": "thinking", "message": f"Asking Groq (Iteration {i}/{max_iterations})..."}) + "\n\n"
+        yield "data: " + json.dumps({"iteration": i, "status": "thinking", "message": f"Asking HuggingFace (Iteration {i}/{max_iterations})..."}) + "\n\n"
         
         max_retries = 4
         retry_delay = 2
@@ -75,9 +78,10 @@ async def solve_with_llm(puzzle_name: str, puzzle_file_path: str, max_iterations
         for attempt in range(max_retries):
             try:
                 response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
                     messages=messages,
                     temperature=0.7,
+                    max_tokens=2048,
                 )
                 reply = response.choices[0].message.content
                 # Add the assistant's reply to the conversation history
