@@ -7,12 +7,14 @@ import glob
 import sys
 import time
 from dotenv import load_dotenv
-from llm_harness import solve_with_llm
 
 load_dotenv()
 
-# Add pushworld path
+# Add backend directory and pushworld path to sys.path
+sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "pushworld", "python3", "src"))
+
+from llm_harness import solve_with_llm
 # pyrefly: ignore [missing-import]
 from pushworld.puzzle import PushWorldPuzzle
 from solvers import solve_bfs, solve_dfs, solve_rgd, solve_rgd_heuristic
