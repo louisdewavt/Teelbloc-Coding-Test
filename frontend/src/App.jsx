@@ -225,9 +225,9 @@ function App() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', padding: '24px', boxSizing: 'border-box' }}>
+    <div className="app-container">
       {/* Header */}
-      <header className="glass-panel" style={{ padding: '20px 30px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header className="glass-panel header-container">
         <div>
           <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '800', background: 'linear-gradient(135deg, #a78bfa 0%, #6366f1 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             PushWorld Explorer
@@ -236,7 +236,7 @@ function App() {
             A premium interface for Google DeepMind's manipulation planning benchmark
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="header-buttons">
           {['level1', 'level2', 'level3', 'level4'].map(lvl => (
             <button
               key={lvl}
@@ -250,9 +250,9 @@ function App() {
       </header>
 
       {/* Main Content Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr 380px', gap: '24px', flex: 1 }}>
+      <div className="main-layout">
         {/* Left: Puzzle list browser */}
-        <section className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 190px)', overflowY: 'auto' }}>
+        <section className="glass-panel left-panel">
           <h2 style={{ fontSize: '18px', margin: '0 0 16px 0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
             Select Puzzle
           </h2>
@@ -276,8 +276,8 @@ function App() {
         </section>
 
         {/* Center: Play Area */}
-        <section className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <h2 style={{ fontSize: '20px', margin: '0 0 16px 0', fontWeight: '700' }}>
+        <section className="glass-panel center-panel">
+          <h2 style={{ fontSize: '20px', margin: '0 0 16px 0', fontWeight: '700', textAlign: 'center' }}>
             {selectedPuzzleName || 'No Puzzle Selected'}
           </h2>
           
@@ -340,7 +340,7 @@ function App() {
         </section>
 
         {/* Right: Solvers & Stats */}
-        <section className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <section className="glass-panel right-panel">
           {/* Solver Controls */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
